@@ -1,17 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/layout/PageHeader';
 import HabitPlant, { Habit } from '@/components/habits/HabitPlant';
 import AddHabitDialog from '@/components/habits/AddHabitDialog';
+import { getUserProfile } from '@/components/settings/UserSettings';
 
 // Sample initial habits
 const initialHabits: Habit[] = [
   {
     id: '1',
     name: 'Méditation',
+    iconName: 'Activity',
     streak: 3,
     completedToday: false,
     growthStage: 2,
@@ -19,6 +21,7 @@ const initialHabits: Habit[] = [
   {
     id: '2',
     name: 'Lecture',
+    iconName: 'BookOpen',
     streak: 7,
     completedToday: true,
     growthStage: 3,
@@ -26,6 +29,7 @@ const initialHabits: Habit[] = [
   {
     id: '3',
     name: 'Cours de langue',
+    iconName: 'Calendar',
     streak: 1,
     completedToday: false,
     growthStage: 1,
@@ -33,8 +37,28 @@ const initialHabits: Habit[] = [
 ];
 
 const Garden = () => {
-  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [userName, setUserName] = useState("Imane");
+
+  useEffect(() => {
+    // Load habits from localStorage if available
+    const savedHabits = localStorage.getItem('habits');
+    if (savedHabits) {
+      setHabits(JSON.parse(savedHabits));
+    } else {
+      setHabits(initialHabits);
+    }
+
+    // Load user profile
+    const profile = getUserProfile();
+    setUserName(profile.name);
+  }, []);
+
+  // Save habits to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('habits', JSON.stringify(habits));
+  }, [habits]);
 
   const handleCompleteHabit = (id: string) => {
     setHabits(prevHabits => 
@@ -63,10 +87,16 @@ const Garden = () => {
     toast.success("Habitude accomplie ! 🌱");
   };
 
-  const handleAddHabit = (name: string) => {
+  const handleDeleteHabit = (id: string) => {
+    setHabits(prevHabits => prevHabits.filter(habit => habit.id !== id));
+    toast.success("Habitude supprimée !");
+  };
+
+  const handleAddHabit = (name: string, iconName: string) => {
     const newHabit: Habit = {
       id: Date.now().toString(),
       name,
+      iconName,
       streak: 0,
       completedToday: false,
       growthStage: 0
@@ -79,7 +109,7 @@ const Garden = () => {
   return (
     <div className="pb-24">
       <PageHeader 
-        title="Mon Jardin des Habitudes" 
+        title={`Jardin des Habitudes de ${userName}`}
         subtitle="Cultive tes habitudes jour après jour"
       />
       
@@ -89,6 +119,7 @@ const Garden = () => {
             key={habit.id}
             habit={habit}
             onComplete={handleCompleteHabit}
+            onDelete={handleDeleteHabit}
           />
         ))}
         

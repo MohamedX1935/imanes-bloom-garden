@@ -3,6 +3,31 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import PageHeader from '@/components/layout/PageHeader';
 import SummaryCards from '@/components/dashboard/SummaryCards';
+import { getUserProfile } from '@/components/settings/UserSettings';
+import { ChartContainer } from '@/components/ui/chart';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+interface StepHistory {
+  date: string;
+  steps: number;
+}
+
+const generateDemoHistory = (): StepHistory[] => {
+  const history: StepHistory[] = [];
+  const today = new Date();
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    
+    history.push({
+      date: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
+      steps: Math.floor(Math.random() * 6000) + 4000
+    });
+  }
+  
+  return history;
+};
 
 const Dashboard = () => {
   // These would normally be fetched from a global state or API
@@ -13,17 +38,59 @@ const Dashboard = () => {
     totalSteps: 4500,
     activityMinutes: 0
   });
+
+  const [stepHistory, setStepHistory] = useState<StepHistory[]>(generateDemoHistory());
+  const [userName, setUserName] = useState("Imane");
   
-  // For demo purposes, let's simulate some data updates
+  // Load data on component mount
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Try to load step history from localStorage
+    const savedHistory = localStorage.getItem('stepHistory');
+    if (savedHistory) {
+      setStepHistory(JSON.parse(savedHistory));
+    }
+
+    // Load habits data to get completed count
+    const savedHabits = localStorage.getItem('habits');
+    if (savedHabits) {
+      const habits = JSON.parse(savedHabits);
+      const completed = habits.filter((h: any) => h.completedToday).length;
       setStats(prev => ({
         ...prev,
-        totalSteps: prev.totalSteps + Math.floor(Math.random() * 10) + 1
+        habitsCompleted: completed,
+        totalHabits: habits.length
       }));
-    }, 5000);
-    
-    return () => clearInterval(interval);
+    }
+
+    // Load steps data
+    const savedSteps = localStorage.getItem('todaySteps');
+    if (savedSteps) {
+      const data = JSON.parse(savedSteps);
+      if (data.stepData) {
+        setStats(prev => ({
+          ...prev,
+          totalSteps: data.stepData.steps
+        }));
+      }
+    }
+
+    // Load activity sessions to get total minutes
+    const savedSessions = localStorage.getItem('activitySessions');
+    if (savedSessions) {
+      const sessions = JSON.parse(savedSessions);
+      const minutes = sessions.reduce((acc: number, session: any) => {
+        return acc + Math.round(session.duration / 60);
+      }, 0);
+      
+      setStats(prev => ({
+        ...prev,
+        activityMinutes: minutes
+      }));
+    }
+
+    // Load user profile
+    const profile = getUserProfile();
+    setUserName(profile.name);
   }, []);
   
   const renderQuote = () => {
@@ -49,7 +116,7 @@ const Dashboard = () => {
   return (
     <div className="pb-24">
       <PageHeader 
-        title="Tableau d'Épanouissement" 
+        title={`Tableau d'Épanouissement de ${userName}`}
         subtitle="Ton parcours de croissance personnelle"
       />
       
@@ -78,6 +145,37 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </Card>
+        
+        <Card className="bloom-card p-4">
+          <h3 className="font-handwriting text-bloom-purple-dark text-xl mb-4">Historique des Pas</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={stepHistory}
+                margin={{ top: 5, right: 10, left: 10, bottom: 15 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px'
+                  }}
+                  formatter={(value) => [`${value} pas`, "Pas"]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="steps" 
+                  stroke="#8884d8" 
+                  strokeWidth={2}
+                  activeDot={{ r: 8 }} 
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </Card>
         

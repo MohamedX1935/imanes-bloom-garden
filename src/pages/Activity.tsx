@@ -4,7 +4,9 @@ import { Card } from '@/components/ui/card';
 import PageHeader from '@/components/layout/PageHeader';
 import StepsTracker from '@/components/activity/StepsTracker';
 import ActivityTimer from '@/components/activity/ActivityTimer';
+import UserSettings from '@/components/settings/UserSettings';
 import { toast } from 'sonner';
+import { getUserProfile } from '@/components/settings/UserSettings';
 
 interface ActivitySession {
   id: string;
@@ -16,6 +18,20 @@ interface ActivitySession {
 const Activity = () => {
   const [sessions, setSessions] = useState<ActivitySession[]>([]);
   const [totalMinutes, setTotalMinutes] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [userName, setUserName] = useState("Imane");
+  
+  useEffect(() => {
+    // Load saved sessions from localStorage
+    const savedSessions = localStorage.getItem('activitySessions');
+    if (savedSessions) {
+      setSessions(JSON.parse(savedSessions));
+    }
+    
+    // Load user profile
+    const profile = getUserProfile();
+    setUserName(profile.name);
+  }, []);
   
   useEffect(() => {
     // Calculate total minutes from all sessions
@@ -23,6 +39,9 @@ const Activity = () => {
       return acc + Math.round(session.duration / 60);
     }, 0);
     setTotalMinutes(total);
+    
+    // Save sessions to localStorage whenever they change
+    localStorage.setItem('activitySessions', JSON.stringify(sessions));
   }, [sessions]);
   
   const handleSessionComplete = (duration: number) => {
@@ -45,13 +64,13 @@ const Activity = () => {
   return (
     <div className="pb-24">
       <PageHeader 
-        title="Mon Espace Activité" 
+        title={`Espace Activité de ${userName}`}
         subtitle="Suis tes pas et tes séances d'activité"
       />
       
       <div className="px-4 space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <StepsTracker />
+          <StepsTracker onOpenSettings={() => setSettingsOpen(true)} />
           <Card className="bloom-card text-center">
             <div className="inline-flex items-center justify-center bg-bloom-peach-light/30 p-3 rounded-full mb-2">
               <span className="text-xl">🏆</span>
@@ -94,6 +113,11 @@ const Activity = () => {
           </div>
         )}
       </div>
+      
+      <UserSettings 
+        open={settingsOpen} 
+        onOpenChange={setSettingsOpen} 
+      />
     </div>
   );
 };
