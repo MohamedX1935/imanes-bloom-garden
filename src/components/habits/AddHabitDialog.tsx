@@ -13,7 +13,7 @@ interface AddHabitDialogProps {
   onAddHabit: (name: string, iconName: string) => void;
 }
 
-// Icons available for habits
+// Icons disponibles pour les habitudes (bibliothèque étendue)
 const availableIcons = [
   { name: "Leaf", icon: icons.Leaf },
   { name: "Heart", icon: icons.Heart },
@@ -24,7 +24,28 @@ const availableIcons = [
   { name: "Settings", icon: icons.Settings },
   { name: "Edit", icon: icons.Edit },
   { name: "List", icon: icons.List },
-  { name: "CalendarDays", icon: icons.CalendarDays }
+  { name: "CalendarDays", icon: icons.CalendarDays },
+  // Icônes supplémentaires
+  { name: "Flower", icon: icons.Flower },
+  { name: "Music", icon: icons.Music },
+  { name: "Bike", icon: icons.Bike },
+  { name: "Dumbbell", icon: icons.Dumbbell },
+  { name: "Coffee", icon: icons.Coffee },
+  { name: "Brain", icon: icons.Brain },
+  { name: "Flame", icon: icons.Flame },
+  { name: "ShowerHead", icon: icons.ShowerHead },
+  { name: "Smile", icon: icons.Smile },
+  { name: "Sun", icon: icons.Sun },
+  { name: "Moon", icon: icons.Moon },
+  { name: "Water", icon: icons.Droplet },
+  { name: "Book", icon: icons.BookText },
+  { name: "Pen", icon: icons.Pen },
+  { name: "Pizza", icon: icons.Pizza },
+  { name: "Apple", icon: icons.Apple },
+  { name: "Salad", icon: icons.Salad },
+  { name: "Gamepad", icon: icons.Gamepad2 },
+  { name: "Yoga", icon: icons.FlameIcon },
+  { name: "Sleep", icon: icons.BedIcon }
 ];
 
 const AddHabitDialog: React.FC<AddHabitDialogProps> = ({ 
@@ -34,6 +55,13 @@ const AddHabitDialog: React.FC<AddHabitDialogProps> = ({
 }) => {
   const [habitName, setHabitName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Leaf');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filtrer les icônes selon le terme de recherche
+  const filteredIcons = searchTerm 
+    ? availableIcons.filter(icon => 
+        icon.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : availableIcons;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +69,7 @@ const AddHabitDialog: React.FC<AddHabitDialogProps> = ({
       onAddHabit(habitName.trim(), selectedIcon);
       setHabitName('');
       setSelectedIcon('Leaf');
+      setSearchTerm('');
       onOpenChange(false);
     }
   };
@@ -53,7 +82,7 @@ const AddHabitDialog: React.FC<AddHabitDialogProps> = ({
             Planter une nouvelle habitude
           </DialogTitle>
           <DialogDescription>
-            Donne un nom à ton habitude et choisis une icône pour la représenter.
+            Donne un nom à ton habitude et choisis une icône pour la représenter dans ton jardin.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -72,9 +101,18 @@ const AddHabitDialog: React.FC<AddHabitDialogProps> = ({
             </div>
             
             <div>
-              <Label className="block mb-2">Icône</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {availableIcons.map(({ name, icon: Icon }) => (
+              <div className="flex justify-between items-center mb-2">
+                <Label>Icône</Label>
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Rechercher une icône..."
+                  className="w-[200px] h-8 text-sm"
+                />
+              </div>
+              
+              <div className="grid grid-cols-5 gap-2 max-h-[200px] overflow-y-auto p-1">
+                {filteredIcons.map(({ name, icon: Icon }) => (
                   <Button
                     key={name}
                     type="button"
@@ -93,14 +131,21 @@ const AddHabitDialog: React.FC<AddHabitDialogProps> = ({
                   </Button>
                 ))}
               </div>
+              
+              {filteredIcons.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  Aucune icône correspondante trouvée
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
             <Button 
               type="submit" 
               className="bloom-button"
+              disabled={!habitName.trim()}
             >
-              Planter
+              Planter dans mon jardin
             </Button>
           </DialogFooter>
         </form>

@@ -1,8 +1,10 @@
 
-import React from 'react';
-import { CheckCircle, Trash2, Leaf } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle, Trash2, Flower } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as icons from 'lucide-react';
+
+export type GrowthStage = 0 | 1 | 2 | 3 | 4;
 
 export interface Habit {
   id: string;
@@ -11,7 +13,8 @@ export interface Habit {
   streak: number;
   completedToday: boolean;
   lastCompleted?: Date;
-  growthStage: 0 | 1 | 2 | 3; // 0: seed, 1: sprout, 2: growing, 3: blooming
+  growthStage: GrowthStage; // 0: seed, 1: sprout, 2: growing, 3: blooming, 4: mature
+  regressionDisabled?: boolean; // New property to prevent regression once mature
 }
 
 interface HabitPlantProps {
@@ -21,12 +24,23 @@ interface HabitPlantProps {
 }
 
 const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) => {
+  const [animate, setAnimate] = useState(false);
+
   // Plant visuals based on growth stage
   const plantImages = [
-    "🌱", // seed
-    "🌿", // sprout
-    "🪴", // growing
-    "🌸", // blooming
+    "🌱", // seed (stage 0)
+    "🌿", // sprout (stage 1)
+    "🪴", // growing (stage 2)
+    "🌸", // blooming (stage 3)
+    "🌳", // mature tree (stage 4)
+  ];
+
+  const plantDescriptions = [
+    "Graine plantée", // seed
+    "Début de pousse", // sprout
+    "En croissance", // growing
+    "Floraison", // blooming
+    "Arbre mature", // mature tree
   ];
 
   const plantSize = [
@@ -34,17 +48,40 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
     "text-4xl", // sprout
     "text-5xl", // growing
     "text-6xl", // blooming
+    "text-7xl", // mature tree
   ];
 
   // Get the icon component from habit.iconName
   const getIconComponent = () => {
     if (!habit.iconName || !(habit.iconName in icons)) {
-      return Leaf;
+      return Flower;
     }
     return (icons as any)[habit.iconName];
   };
 
   const IconComponent = getIconComponent();
+  
+  // Calculer le nombre de jours restants pour atteindre l'étape suivante
+  const getDaysToNextStage = () => {
+    const daysRequired = [0, 3, 7, 14, 30]; // Jours requis pour chaque étape
+    if (habit.growthStage >= 4) return null; // Étape finale atteinte
+    
+    const currentStageThreshold = daysRequired[habit.growthStage + 1];
+    return currentStageThreshold - habit.streak;
+  };
+  
+  const daysToNextStage = getDaysToNextStage();
+  
+  const handleCompleteClick = () => {
+    if (habit.completedToday) return;
+    
+    // Animer la plante quand marquée complète
+    setAnimate(true);
+    setTimeout(() => setAnimate(false), 1000);
+    
+    // Appeler la fonction onComplete
+    onComplete(habit.id);
+  };
   
   return (
     <div className="bloom-card flex flex-col items-center relative">
@@ -60,6 +97,7 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
         className={cn(
           "mb-3 transition-all duration-500",
           plantSize[habit.growthStage],
+          animate ? "animate-bounce" : "",
           habit.completedToday ? "animate-float" : ""
         )}
       >
@@ -68,8 +106,21 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
       
       <div className="text-center">
         <h3 className="text-lg font-medium mb-1">{habit.name}</h3>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-xs text-gray-500 mb-1">
           {habit.streak} jours de suite
+        </p>
+        <p className="text-xs text-bloom-green mb-3">
+          {plantDescriptions[habit.growthStage]}
+          {daysToNextStage !== null && daysToNextStage > 0 && (
+            <span className="block text-gray-500 mt-1">
+              ({daysToNextStage} jours avant évolution)
+            </span>
+          )}
+          {habit.growthStage === 4 && (
+            <span className="block text-bloom-purple mt-1 font-semibold">
+              ★ Objectif atteint ! ★
+            </span>
+          )}
         </p>
       </div>
       
@@ -79,7 +130,7 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
         </div>
         
         <button
-          onClick={() => onComplete(habit.id)}
+          onClick={handleCompleteClick}
           disabled={habit.completedToday}
           className={cn(
             "rounded-full p-2 transition-all duration-300",

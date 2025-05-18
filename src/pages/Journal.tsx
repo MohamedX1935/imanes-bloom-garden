@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageHeader from '@/components/layout/PageHeader';
 import JournalEntry, { JournalEntryData } from '@/components/journal/JournalEntry';
@@ -10,6 +10,33 @@ const Journal = () => {
   const [entries, setEntries] = useState<JournalEntryData[]>([]);
   const [drawings, setDrawings] = useState<string[]>([]);
   
+  // Charger les entrées et dessins sauvegardés au chargement du composant
+  useEffect(() => {
+    const savedEntries = localStorage.getItem('journalEntries');
+    if (savedEntries) {
+      try {
+        const parsed = JSON.parse(savedEntries);
+        // Convertir les dates de string à Date
+        const entriesWithDateObjects = parsed.map((entry: any) => ({
+          ...entry,
+          date: new Date(entry.date)
+        }));
+        setEntries(entriesWithDateObjects);
+      } catch (error) {
+        console.error("Erreur lors du chargement des entrées du journal:", error);
+      }
+    }
+    
+    const savedDrawings = localStorage.getItem('journalDrawings');
+    if (savedDrawings) {
+      try {
+        setDrawings(JSON.parse(savedDrawings));
+      } catch (error) {
+        console.error("Erreur lors du chargement des dessins:", error);
+      }
+    }
+  }, []);
+  
   const handleSaveEntry = (content: string) => {
     const newEntry = {
       id: Date.now().toString(),
@@ -17,12 +44,20 @@ const Journal = () => {
       content
     };
     
-    setEntries(prev => [newEntry, ...prev]);
+    const updatedEntries = [newEntry, ...entries];
+    setEntries(updatedEntries);
+    
+    // Sauvegarder dans localStorage
+    localStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
     toast.success("Journal sauvegardé !");
   };
   
   const handleSaveDrawing = (imageData: string) => {
-    setDrawings(prev => [imageData, ...prev]);
+    const updatedDrawings = [imageData, ...drawings];
+    setDrawings(updatedDrawings);
+    
+    // Sauvegarder dans localStorage
+    localStorage.setItem('journalDrawings', JSON.stringify(updatedDrawings));
     toast.success("Dessin sauvegardé !");
   };
   
