@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Leaf, BookOpen, Walk, Star } from 'lucide-react';
+import { Leaf, BookOpen, Activity, Star } from 'lucide-react';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -75,7 +75,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({
       />
       
       <StatCard
-        icon={<Walk className="h-4 w-4 text-bloom-purple" />}
+        icon={<Activity className="h-4 w-4 text-bloom-purple" />}
         title="Pas"
         value={totalSteps.toLocaleString()}
       />
