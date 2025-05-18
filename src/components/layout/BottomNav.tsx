@@ -1,16 +1,16 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Leaf, BookOpen, Plant, FlowerIcon as Flower } from 'lucide-react';
+import { Leaf, BookOpen, Walk, FlowerIcon as Flower } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const BottomNav = () => {
   const location = useLocation();
   
   const navItems = [
-    { name: "Jardin", path: "/", icon: <Leaf className="w-6 h-6" /> },
+    { name: "Jardin", path: "/garden", icon: <Leaf className="w-6 h-6" /> },
     { name: "Journal", path: "/journal", icon: <BookOpen className="w-6 h-6" /> },
-    { name: "Activité", path: "/activity", icon: <Plant className="w-6 h-6" /> },
+    { name: "Activité", path: "/activity", icon: <Walk className="w-6 h-6" /> },
     { name: "Tableau", path: "/dashboard", icon: <Flower className="w-6 h-6" /> },
   ];
 
