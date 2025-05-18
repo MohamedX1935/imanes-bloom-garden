@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,25 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom bloom colors
+				bloom: {
+					green: {
+						light: '#E5F1E9',
+						DEFAULT: '#9FD0AE',
+						dark: '#68A87C',
+					},
+					purple: {
+						light: '#E5DEFF',
+						DEFAULT: '#9b87f5',
+						dark: '#7E69AB',
+					},
+					peach: {
+						light: '#FDE1D3',
+						DEFAULT: '#F8C4A9',
+						dark: '#E5A988',
+					},
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -70,26 +89,34 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'plant-grow': {
+					'0%': { transform: 'scale(0.95)', opacity: '0.7' },
+					'50%': { transform: 'scale(1.02)' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'float': {
+					'0%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' },
+					'100%': { transform: 'translateY(0px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'plant-grow': 'plant-grow 2s ease-out forwards',
+				'float': 'float 3s ease-in-out infinite'
+			},
+			fontFamily: {
+				sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+				handwriting: ['var(--font-handwriting)', 'cursive'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
