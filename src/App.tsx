@@ -8,6 +8,8 @@ import Garden from "./pages/Garden";
 import Journal from "./pages/Journal";
 import Activity from "./pages/Activity";
 import Dashboard from "./pages/Dashboard";
+import Creative from "./pages/Creative";
+import ButterflyCollection from "./pages/Butterflies";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/layout/BottomNav";
 
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/journal" element={<Journal />} />
             <Route path="/activity" element={<Activity />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/creative" element={<Creative />} />
+            <Route path="/butterflies" element={<ButterflyCollection />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNav />
