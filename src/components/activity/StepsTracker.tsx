@@ -26,6 +26,62 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
     calories: 0
   });
   const [sensorAvailable, setSensorAvailable] = useState(false);
+  
+  // Define the motion handler at component level so it can be referenced in cleanup
+  const handleMotion = (event: DeviceMotionEvent) => {
+    if (!event.acceleration || !event.acceleration.x) return;
+    
+    const { x, y, z } = event.acceleration;
+    const currentTime = new Date().getTime();
+    
+    // Get the last time and acceleration from the element's dataset or initialize
+    const lastTimeStr = window.localStorage.getItem('lastStepTime') || '0';
+    const lastTime = parseInt(lastTimeStr, 10);
+    
+    const lastAccelStr = window.localStorage.getItem('lastAcceleration') || '{"x":0,"y":0,"z":0}';
+    const lastAcceleration = JSON.parse(lastAccelStr);
+    
+    // Only process if we have enough time difference (debounce)
+    if (currentTime - lastTime < 300) return;
+    
+    // Calculate magnitude of acceleration change
+    const deltaX = Math.abs(x - lastAcceleration.x);
+    const deltaY = Math.abs(y - lastAcceleration.y);
+    const deltaZ = Math.abs(z - lastAcceleration.z);
+    
+    const acceleration = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+    
+    // Threshold for step detection
+    const threshold = 10;
+    
+    // Check if the acceleration exceeds our threshold for a step
+    if (acceleration > threshold) {
+      // Step detected!
+      setStepData(prev => {
+        const newSteps = prev.steps + 1;
+        const profile = getUserProfile();
+        const newDistance = parseFloat((newSteps * profile.strideLength / 1000).toFixed(2));
+        
+        // Calculate calories (MET * weight * hours)
+        // MET = 3.5 for normal walking
+        // Convert time from minutes to hours (assuming 1 step takes ~0.5 seconds)
+        const timeInHours = (newSteps * 0.5) / 3600;
+        const caloriesBurned = Math.round(3.5 * profile.weight * timeInHours);
+        
+        return {
+          steps: newSteps,
+          distance: newDistance,
+          calories: caloriesBurned
+        };
+      });
+      
+      // Save the current time
+      window.localStorage.setItem('lastStepTime', currentTime.toString());
+    }
+    
+    // Update last acceleration values
+    window.localStorage.setItem('lastAcceleration', JSON.stringify({ x, y, z }));
+  };
 
   // Check if we have sensor access and initialize step counting
   useEffect(() => {
@@ -99,55 +155,6 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
 
   // Initialize step counting with device motion sensors
   const initializeStepCounting = () => {
-    // Variables for step detection algorithm
-    let lastAcceleration = { x: 0, y: 0, z: 0 };
-    let lastTime = 0;
-    let threshold = 10; // Threshold for step detection
-    
-    const handleMotion = (event: DeviceMotionEvent) => {
-      if (!event.acceleration || !event.acceleration.x) return;
-      
-      const { x, y, z } = event.acceleration;
-      const currentTime = new Date().getTime();
-      
-      // Only process if we have enough time difference (debounce)
-      if (currentTime - lastTime < 300) return;
-      
-      // Calculate magnitude of acceleration change
-      const deltaX = Math.abs(x - lastAcceleration.x);
-      const deltaY = Math.abs(y - lastAcceleration.y);
-      const deltaZ = Math.abs(z - lastAcceleration.z);
-      
-      const acceleration = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-      
-      // Check if the acceleration exceeds our threshold for a step
-      if (acceleration > threshold) {
-        // Step detected!
-        setStepData(prev => {
-          const newSteps = prev.steps + 1;
-          const profile = getUserProfile();
-          const newDistance = parseFloat((newSteps * profile.strideLength / 1000).toFixed(2));
-          
-          // Calculate calories (MET * weight * hours)
-          // MET = 3.5 for normal walking
-          // Convert time from minutes to hours (assuming 1 step takes ~0.5 seconds)
-          const timeInHours = (newSteps * 0.5) / 3600;
-          const caloriesBurned = Math.round(3.5 * profile.weight * timeInHours);
-          
-          return {
-            steps: newSteps,
-            distance: newDistance,
-            calories: caloriesBurned
-          };
-        });
-        
-        lastTime = currentTime;
-      }
-      
-      // Update last acceleration values
-      lastAcceleration = { x, y, z };
-    };
-    
     // Add event listener for motion detection
     window.addEventListener('devicemotion', handleMotion);
   };
