@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -68,11 +69,20 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
         const timeInHours = (newSteps * 0.5) / 3600;
         const caloriesBurned = Math.round(3.5 * profile.weight * timeInHours);
         
-        return {
+        const updatedData = {
           steps: newSteps,
           distance: newDistance,
           calories: caloriesBurned
         };
+        
+        // Save immediately to localStorage when steps change
+        const today = new Date().toDateString();
+        localStorage.setItem('todaySteps', JSON.stringify({
+          date: today,
+          stepData: updatedData
+        }));
+        
+        return updatedData;
       });
       
       // Save the current time
@@ -83,8 +93,32 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
     window.localStorage.setItem('lastAcceleration', JSON.stringify({ x, y, z }));
   };
 
-  // Check if we have sensor access and initialize step counting
+  // Load saved step data on component mount
   useEffect(() => {
+    // Load saved steps from localStorage
+    const savedSteps = localStorage.getItem('todaySteps');
+    if (savedSteps) {
+      try {
+        const data = JSON.parse(savedSteps);
+        // Only use saved steps if they're from today
+        const today = new Date().toDateString();
+        if (data.date === today && data.stepData) {
+          console.log("Loading saved steps:", data.stepData);
+          setStepData(data.stepData);
+        } else {
+          // Reset for new day
+          const newData = { date: today, stepData: { steps: 0, distance: 0, calories: 0 } };
+          localStorage.setItem('todaySteps', JSON.stringify(newData));
+        }
+      } catch (e) {
+        console.error("Error loading saved steps", e);
+        // Reset if data is corrupted
+        const today = new Date().toDateString();
+        const newData = { date: today, stepData: { steps: 0, distance: 0, calories: 0 } };
+        localStorage.setItem('todaySteps', JSON.stringify(newData));
+      }
+    }
+    
     // Try to access device motion sensors
     if (typeof DeviceMotionEvent !== 'undefined') {
       if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
@@ -120,21 +154,6 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
       useSimulatedSteps();
     }
     
-    // Load saved steps from localStorage
-    const savedSteps = localStorage.getItem('todaySteps');
-    if (savedSteps) {
-      const data = JSON.parse(savedSteps);
-      // Only use saved steps if they're from today
-      const today = new Date().toDateString();
-      if (data.date === today) {
-        setStepData(data.stepData);
-      } else {
-        // Reset for new day
-        const newData = { date: today, stepData: { steps: 0, distance: 0, calories: 0 } };
-        localStorage.setItem('todaySteps', JSON.stringify(newData));
-      }
-    }
-    
     return () => {
       // Cleanup event listeners if needed
       window.removeEventListener('devicemotion', handleMotion);
@@ -144,13 +163,6 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
   // Update progress whenever steps change
   useEffect(() => {
     setProgress(Math.min(100, (stepData.steps / goal) * 100));
-    
-    // Save steps to localStorage
-    const today = new Date().toDateString();
-    localStorage.setItem('todaySteps', JSON.stringify({
-      date: today,
-      stepData
-    }));
   }, [stepData.steps, goal]);
 
   // Initialize step counting with device motion sensors
@@ -169,11 +181,20 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
     const timeInHours = (initialSteps * 0.5) / 3600;
     const initialCalories = Math.round(3.5 * profile.weight * timeInHours);
     
-    setStepData({
+    const initialData = {
       steps: initialSteps,
       distance: initialDistance,
       calories: initialCalories
-    });
+    };
+    
+    setStepData(initialData);
+    
+    // Save initial simulated data to localStorage
+    const today = new Date().toDateString();
+    localStorage.setItem('todaySteps', JSON.stringify({
+      date: today,
+      stepData: initialData
+    }));
     
     const interval = setInterval(() => {
       setStepData(prev => {
@@ -182,11 +203,20 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
         const timeInHours = (newSteps * 0.5) / 3600;
         const caloriesBurned = Math.round(3.5 * profile.weight * timeInHours);
         
-        return {
+        const updatedData = {
           steps: newSteps,
           distance: newDistance,
           calories: caloriesBurned
         };
+        
+        // Save to localStorage on each update
+        const today = new Date().toDateString();
+        localStorage.setItem('todaySteps', JSON.stringify({
+          date: today,
+          stepData: updatedData
+        }));
+        
+        return updatedData;
       });
     }, 7000); // Slower interval for simulation
     
