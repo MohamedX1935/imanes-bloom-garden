@@ -5,10 +5,8 @@ import {
   Home, 
   Flower, 
   BookOpen, 
-  Activity, 
-  Brush
+  Activity
 } from 'lucide-react';
-import { Bug } from 'lucide-react'; // Using Bug icon as replacement for Butterfly
 
 const BottomNav = () => {
   return (
@@ -52,26 +50,6 @@ const BottomNav = () => {
         >
           <Activity className="w-6 h-6" />
           <span className="text-xs mt-1">Activité</span>
-        </NavLink>
-
-        <NavLink
-          to="/creative"
-          className={({ isActive }) => `flex flex-col items-center p-2 ${
-            isActive ? 'text-bloom-purple' : 'text-gray-500'
-          }`}
-        >
-          <Brush className="w-6 h-6" />
-          <span className="text-xs mt-1">Créatif</span>
-        </NavLink>
-
-        <NavLink
-          to="/butterflies"
-          className={({ isActive }) => `flex flex-col items-center p-2 ${
-            isActive ? 'text-bloom-purple' : 'text-gray-500'
-          }`}
-        >
-          <Bug className="w-6 h-6" />
-          <span className="text-xs mt-1">Papillons</span>
         </NavLink>
       </div>
     </nav>

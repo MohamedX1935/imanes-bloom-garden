@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
 import { CheckCircle, Trash2, Flower } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as icons from 'lucide-react';
-import ButterflyReward from '../effects/ButterflyReward';
 
 export type GrowthStage = 0 | 1 | 2 | 3 | 4;
 
@@ -25,7 +25,6 @@ interface HabitPlantProps {
 
 const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) => {
   const [animate, setAnimate] = useState(false);
-  const [showButterflies, setShowButterflies] = useState(false);
 
   // Plant visuals based on growth stage
   const plantImages = [
@@ -80,31 +79,7 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
     setAnimate(true);
     setTimeout(() => setAnimate(false), 1000);
     
-    // Montrer les papillons de récompense
     onComplete(habit.id);
-    
-    // Afficher les papillons avec un léger délai pour permettre à l'état de se mettre à jour
-    setTimeout(() => {
-      setShowButterflies(true);
-    }, 100);
-    
-    // Cacher les papillons après un certain temps
-    setTimeout(() => {
-      setShowButterflies(false);
-    }, 3500);
-  };
-  
-  // Déterminer le nombre de papillons en fonction du streak et de l'étape de croissance
-  const getButterfliesCount = () => {
-    // Bonus pour accomplir un arbre mature (étape 4)
-    if (habit.growthStage === 4) return 7;
-    
-    // Le nombre augmente avec le streak
-    if (habit.streak >= 30) return 5;
-    if (habit.streak >= 14) return 4;
-    if (habit.streak >= 7) return 3;
-    if (habit.streak >= 3) return 2;
-    return 1;
   };
   
   return (
@@ -166,15 +141,6 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
           <CheckCircle className="w-5 h-5" />
         </button>
       </div>
-      
-      {/* Système de papillons de récompense amélioré */}
-      {showButterflies && (
-        <ButterflyReward 
-          show={true} 
-          count={getButterfliesCount()} 
-          onComplete={() => setShowButterflies(false)}
-        />
-      )}
     </div>
   );
 };
