@@ -6,9 +6,9 @@ import {
   Flower, 
   BookOpen, 
   Activity, 
-  Butterfly, 
   Brush
 } from 'lucide-react';
+import { Bug } from 'lucide-react'; // Using Bug icon as replacement for Butterfly
 
 const BottomNav = () => {
   return (
@@ -70,7 +70,7 @@ const BottomNav = () => {
             isActive ? 'text-bloom-purple' : 'text-gray-500'
           }`}
         >
-          <Butterfly className="w-6 h-6" />
+          <Bug className="w-6 h-6" />
           <span className="text-xs mt-1">Papillons</span>
         </NavLink>
       </div>
