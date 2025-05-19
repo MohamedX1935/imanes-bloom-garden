@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Butterfly from './Butterfly';
 
@@ -8,6 +7,7 @@ export interface ButterflyType {
   size: 'sm' | 'md' | 'lg';
   position: { x: number, y: number };
   targetPosition?: { x: number, y: number };
+  flightPattern?: string;
 }
 
 interface ButterflyRewardProps {
@@ -72,7 +72,7 @@ const ButterflyReward: React.FC<ButterflyRewardProps> = ({
           size,
           position: { x: startPosition.x, y: startPosition.y },
           targetPosition: { x: targetX, y: targetY },
-          flightPattern // Nouvelle propriété pour le pattern de vol
+          flightPattern
         };
       });
       

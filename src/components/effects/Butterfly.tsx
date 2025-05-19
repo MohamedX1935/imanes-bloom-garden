@@ -16,7 +16,8 @@ const Butterfly: React.FC<ButterflyProps> = ({
   size = 'md', 
   position,
   className,
-  onAnimationEnd
+  onAnimationEnd,
+  flightPattern // Now we properly accept this prop
 }) => {
   const sizeClasses = {
     sm: 'w-6 h-6',
@@ -56,6 +57,7 @@ const Butterfly: React.FC<ButterflyProps> = ({
         top: `${position.y}px`,
       }}
       onAnimationEnd={onAnimationEnd}
+      data-flight-pattern={flightPattern} // We can add this as a data attribute for potential CSS targeting
     >
       <svg viewBox="0 0 50 50" className="w-full h-full">
         <g className="butterfly-wings animate-butterfly-wings">
