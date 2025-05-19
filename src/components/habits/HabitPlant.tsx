@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CheckCircle, Trash2, Flower } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -82,23 +81,26 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
     setTimeout(() => setAnimate(false), 1000);
     
     // Montrer les papillons de récompense
-    const oldGrowthStage = habit.growthStage;
-    
-    // Appeler la fonction onComplete
     onComplete(habit.id);
     
-    // Si le streak augmente, afficher des papillons
-    setShowButterflies(true);
+    // Afficher les papillons avec un léger délai pour permettre à l'état de se mettre à jour
+    setTimeout(() => {
+      setShowButterflies(true);
+    }, 100);
     
-    // Déterminer le nombre de papillons en fonction de l'étape
+    // Cacher les papillons après un certain temps
     setTimeout(() => {
       setShowButterflies(false);
-    }, 3000);
+    }, 3500);
   };
   
-  // Déterminer le nombre de papillons en fonction du streak
+  // Déterminer le nombre de papillons en fonction du streak et de l'étape de croissance
   const getButterfliesCount = () => {
-    if (habit.streak >= 30) return 5; // Beaucoup de papillons pour l'arbre mature
+    // Bonus pour accomplir un arbre mature (étape 4)
+    if (habit.growthStage === 4) return 7;
+    
+    // Le nombre augmente avec le streak
+    if (habit.streak >= 30) return 5;
     if (habit.streak >= 14) return 4;
     if (habit.streak >= 7) return 3;
     if (habit.streak >= 3) return 2;
@@ -165,7 +167,7 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
         </button>
       </div>
       
-      {/* Système de papillons de récompense */}
+      {/* Système de papillons de récompense amélioré */}
       {showButterflies && (
         <ButterflyReward 
           show={true} 

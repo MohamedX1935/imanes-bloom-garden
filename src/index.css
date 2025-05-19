@@ -135,8 +135,123 @@
   }
 }
 
+/* Nouveaux modèles de vol pour les papillons */
+@keyframes butterfly-zigzag {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20vh) translateX(10vw) scale(0.9);
+  }
+  40% {
+    transform: translateY(-40vh) translateX(-10vw) scale(0.95);
+  }
+  60% {
+    transform: translateY(-60vh) translateX(10vw) scale(1);
+  }
+  80% {
+    transform: translateY(-80vh) translateX(-10vw) scale(1);
+  }
+  100% {
+    transform: translateY(-100vh) translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes butterfly-straight {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) scale(1);
+  }
+}
+
+@keyframes butterfly-curved {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.8) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(20vw) scale(1) rotate(30deg);
+  }
+}
+
+@keyframes butterfly-spiral {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(-30vh) rotate(120deg) scale(0.9);
+  }
+  60% {
+    transform: translateY(-50vh) rotate(240deg) scale(0.95);
+  }
+  80% {
+    transform: translateY(-75vh) rotate(300deg) scale(1);
+  }
+  100% {
+    transform: translateY(-100vh) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes butterfly-wave {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-25vh) translateX(15vw) scale(0.85);
+  }
+  50% {
+    transform: translateY(-50vh) translateX(-15vw) scale(0.9);
+  }
+  75% {
+    transform: translateY(-75vh) translateX(15vw) scale(0.95);
+  }
+  100% {
+    transform: translateY(-100vh) translateX(0) scale(1);
+  }
+}
+
 .animate-butterfly-rise {
   animation: butterfly-rise 3s ease-out forwards;
+}
+
+.animate-butterfly-zigzag {
+  animation: butterfly-zigzag 3.5s ease-out forwards;
+}
+
+.animate-butterfly-straight {
+  animation: butterfly-straight 2.5s ease-out forwards;
+}
+
+.animate-butterfly-curved {
+  animation: butterfly-curved 3s ease-out forwards;
+}
+
+.animate-butterfly-spiral {
+  animation: butterfly-spiral 4s ease-out forwards;
+}
+
+.animate-butterfly-wave {
+  animation: butterfly-wave 3.5s ease-out forwards;
 }
 
 @keyframes butterfly-wings {
