@@ -105,17 +105,37 @@ export default {
 					'0%': { transform: 'translateY(0px)' },
 					'50%': { transform: 'translateY(-10px)' },
 					'100%': { transform: 'translateY(0px)' }
+				},
+				'flower-rise': {
+					'0%': { transform: 'translateY(100%) scale(0.5)', opacity: '0' },
+					'60%': { transform: 'translateY(10%) scale(0.8)', opacity: '0.8' },
+					'100%': { transform: 'translateY(0%) scale(1)', opacity: '1' }
+				},
+				'logo-appear': {
+					'0%': { transform: 'scale(0.7)', opacity: '0' },
+					'70%': { transform: 'scale(1.1)', opacity: '0.7' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'fade-out': {
+					'0%': { opacity: '1' },
+					'100%': { opacity: '0', visibility: 'hidden' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'plant-grow': 'plant-grow 2s ease-out forwards',
-				'float': 'float 3s ease-in-out infinite'
+				'float': 'float 3s ease-in-out infinite',
+				'flower-rise': 'flower-rise 1.5s ease-out forwards',
+				'logo-appear': 'logo-appear 2s ease-out forwards',
+				'fade-out': 'fade-out 0.5s ease-out forwards 3s'
 			},
 			fontFamily: {
 				sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
 				handwriting: ['var(--font-handwriting)', 'cursive'],
+				dancing: ['Dancing Script', 'cursive'],
+				pacifico: ['Pacifico', 'cursive'],
+				greatvibes: ['Great Vibes', 'cursive'],
 			},
 		}
 	},

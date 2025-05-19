@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,6 +41,10 @@
     --bloom-green: #9FD0AE;
     --bloom-green-dark: #68A97C;
     --bloom-green-light: #C8E6D3;
+    
+    /* Police personnalisée */
+    --font-sans: 'system-ui', sans-serif;
+    --font-handwriting: 'Dancing Script', cursive;
   }
  
   .dark {
@@ -82,6 +85,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  h1, h2, h3 {
+    @apply font-dancing;
+  }
+  
+  .subtitle {
+    @apply font-pacifico;
+  }
+  
+  .special-text {
+    @apply font-greatvibes;
+  }
 }
 
 @layer components {
@@ -100,7 +115,7 @@
   
   /* Font styles */
   .font-handwriting {
-    font-family: 'Segoe Script', 'Bradley Hand', cursive;
+    font-family: 'Dancing Script', 'Bradley Hand', cursive;
   }
 }
 
