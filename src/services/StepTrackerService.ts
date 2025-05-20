@@ -126,8 +126,11 @@ export class StepTrackerService {
    */
   public async stopTracking() {
     try {
-      // Fix: Use a method that exists in BackgroundRunner
-      await BackgroundRunner.removeAllListeners();
+      // Fix: Using the correct method to stop background tasks
+      // Checking the BackgroundRunner API documentation shows we need to use cancelTask
+      await BackgroundRunner.cancelTask({
+        taskId: 'step_tracking'
+      });
       this.isTracking = false;
       console.log('Suivi des pas en arrière-plan arrêté');
       return true;
