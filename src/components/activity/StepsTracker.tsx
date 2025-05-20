@@ -350,7 +350,7 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
           />
         </div>
         <p className="text-xs text-gray-500 mt-2 text-center">
-          Pour ajouter ce widget à votre écran d'accueil, appuyez longuement sur l'écran d'accueil et choisissez "Widgets" > "Imane's Bloom"
+          Pour ajouter ce widget à votre écran d'accueil, appuyez longuement sur l'écran d'accueil et choisissez "Widgets" &gt; "Imane's Bloom"
         </p>
       </div>
     </Card>
