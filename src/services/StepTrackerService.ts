@@ -102,12 +102,10 @@ export class StepTrackerService {
         setInterval(trackSteps, 1000);
       `;
       
-      // Fix: Use the correct format for dispatchEvent including the required details property
+      // Fix: Use the correct format for dispatchEvent with the required event property
       await BackgroundRunner.dispatchEvent({
         label: 'step_tracking',
-        details: {
-          jsCode: jsCode
-        }
+        event: jsCode
       });
       
       this.isTracking = true;
@@ -125,8 +123,8 @@ export class StepTrackerService {
    */
   public async stopTracking() {
     try {
-      // Fix: Use removeEvents instead of cancelTask which doesn't exist
-      await BackgroundRunner.removeEvents({
+      // Fix: Use a method that exists in BackgroundRunner
+      await BackgroundRunner.unregister({
         label: 'step_tracking'
       });
       this.isTracking = false;
