@@ -102,10 +102,13 @@ export class StepTrackerService {
         setInterval(trackSteps, 1000);
       `;
       
-      // Fix: Use the correct format for dispatchEvent with the required event property
+      // Fix: Use the correct format for dispatchEvent with the required details property
       await BackgroundRunner.dispatchEvent({
         label: 'step_tracking',
-        event: jsCode
+        event: 'step_tracking',
+        details: {
+          jsCode: jsCode
+        }
       });
       
       this.isTracking = true;
@@ -124,9 +127,7 @@ export class StepTrackerService {
   public async stopTracking() {
     try {
       // Fix: Use a method that exists in BackgroundRunner
-      await BackgroundRunner.unregister({
-        label: 'step_tracking'
-      });
+      await BackgroundRunner.removeAllListeners();
       this.isTracking = false;
       console.log('Suivi des pas en arrière-plan arrêté');
       return true;
