@@ -17,7 +17,8 @@ export class NotificationService {
     return NotificationService.instance;
   }
   
-  private async initLocalNotifications() {
+  // Changed from private to public so it can be accessed from App.tsx and Garden.tsx
+  public async initLocalNotifications() {
     try {
       const permissionStatus = await LocalNotifications.requestPermissions();
       console.log('Notification permissions:', permissionStatus.display);
@@ -26,7 +27,8 @@ export class NotificationService {
     }
   }
   
-  private async initPushNotifications() {
+  // Changed from private to public as well for consistency
+  public async initPushNotifications() {
     try {
       const permissionStatus = await PushNotifications.requestPermissions();
       if (permissionStatus.receive === 'granted') {

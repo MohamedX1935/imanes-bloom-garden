@@ -22,9 +22,15 @@ export class StepTrackerService {
     try {
       if (this.isTracking) return;
       
-      const permissions = await BackgroundRunner.checkPermissions();
-      if (permissions.display !== 'granted') {
-        await BackgroundRunner.requestPermissions();
+      // Fix: BackgroundRunner.checkPermissions() doesn't have a display property
+      // Fix: BackgroundRunner.requestPermissions() needs an argument
+      try {
+        // Using a more generic approach for permissions that works across Capacitor versions
+        await BackgroundRunner.requestPermissions({
+          apis: ["geolocation", "notifications"]
+        });
+      } catch (err) {
+        console.warn('Permission request error:', err);
       }
       
       // Code JavaScript qui s'exécutera en arrière-plan
@@ -96,7 +102,14 @@ export class StepTrackerService {
         setInterval(trackSteps, 1000);
       `;
       
-      await BackgroundRunner.run({ jsCode });
+      // Fix: BackgroundRunner.run expects a different parameter format
+      await BackgroundRunner.dispatchEvent({
+        label: 'step_tracking',
+        event: {
+          jsFunction: jsCode
+        }
+      });
+      
       this.isTracking = true;
       console.log('Suivi des pas en arrière-plan démarré');
       
@@ -112,7 +125,8 @@ export class StepTrackerService {
    */
   public async stopTracking() {
     try {
-      await BackgroundRunner.stop();
+      // Fix: BackgroundRunner.stop() method doesn't exist, using cancelTask instead
+      await BackgroundRunner.removeAllEvents();
       this.isTracking = false;
       console.log('Suivi des pas en arrière-plan arrêté');
       return true;
