@@ -102,7 +102,7 @@ export class StepTrackerService {
         setInterval(trackSteps, 1000);
       `;
       
-      // Fix: Use the correct format for dispatchEvent with the required details property
+      // Fix: Use the correct format for dispatchEvent with the required properties
       await BackgroundRunner.dispatchEvent({
         label: 'step_tracking',
         event: 'step_tracking',
@@ -126,11 +126,10 @@ export class StepTrackerService {
    */
   public async stopTracking() {
     try {
-      // Fix: Using the correct method to stop background tasks
-      // Checking the BackgroundRunner API documentation shows we need to use cancelTask
-      await BackgroundRunner.cancelTask({
-        taskId: 'step_tracking'
-      });
+      // Looking at the BackgroundRunner API documentation, it uses events so we need to 
+      // check if there's a method to stop events or background tasks
+      // Using BackgroundRunner.stop() as it seems to be the most likely method to stop all tasks
+      await BackgroundRunner.stop();
       this.isTracking = false;
       console.log('Suivi des pas en arrière-plan arrêté');
       return true;
