@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
-import { CheckCircle, Trash2, Flower } from 'lucide-react';
+import { CheckCircle, Trash2, Flower, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as icons from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import HabitReminderDialog from './HabitReminderDialog';
+import { toast } from 'sonner';
 
 export type GrowthStage = 0 | 1 | 2 | 3 | 4;
 
@@ -15,16 +18,31 @@ export interface Habit {
   lastCompleted?: Date;
   growthStage: GrowthStage; // 0: seed, 1: sprout, 2: growing, 3: blooming, 4: mature
   regressionDisabled?: boolean; // New property to prevent regression once mature
+  reminderEnabled?: boolean; // Whether a reminder is enabled
+  reminderTime?: string; // Time for the reminder (HH:MM)
+  notificationId?: number; // ID of the scheduled notification
 }
 
 interface HabitPlantProps {
   habit: Habit;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onUpdateReminder?: (
+    id: string, 
+    reminderEnabled: boolean, 
+    reminderTime: string, 
+    notificationId?: number
+  ) => void;
 }
 
-const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) => {
+const HabitPlant: React.FC<HabitPlantProps> = ({ 
+  habit, 
+  onComplete, 
+  onDelete,
+  onUpdateReminder = () => {} // Default empty function if not provided
+}) => {
   const [animate, setAnimate] = useState(false);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
 
   // Plant visuals based on growth stage
   const plantImages = [
@@ -81,16 +99,42 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
     
     onComplete(habit.id);
   };
+
+  const handleReminderClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêcher la propagation au parent
+    setReminderDialogOpen(true);
+  };
+
+  const handleSaveReminder = (
+    habitId: string, 
+    reminderEnabled: boolean, 
+    reminderTime: string, 
+    notificationId?: number
+  ) => {
+    onUpdateReminder(habitId, reminderEnabled, reminderTime, notificationId);
+  };
   
   return (
     <div className="bloom-card flex flex-col items-center relative">
-      <button
-        onClick={() => onDelete(habit.id)}
-        className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
-        aria-label="Supprimer l'habitude"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+      <div className="absolute top-2 right-2 flex space-x-1">
+        <button
+          onClick={handleReminderClick}
+          className={`p-1 ${habit.reminderEnabled 
+            ? 'text-bloom-purple' 
+            : 'text-gray-400 hover:text-bloom-purple'} transition-colors`}
+          aria-label="Configurer un rappel"
+        >
+          <Bell className="w-4 h-4" />
+        </button>
+        
+        <button
+          onClick={() => onDelete(habit.id)}
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+          aria-label="Supprimer l'habitude"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
       
       <div 
         className={cn(
@@ -141,6 +185,13 @@ const HabitPlant: React.FC<HabitPlantProps> = ({ habit, onComplete, onDelete }) 
           <CheckCircle className="w-5 h-5" />
         </button>
       </div>
+
+      <HabitReminderDialog 
+        open={reminderDialogOpen}
+        onOpenChange={setReminderDialogOpen}
+        habit={habit}
+        onSaveReminder={handleSaveReminder}
+      />
     </div>
   );
 };

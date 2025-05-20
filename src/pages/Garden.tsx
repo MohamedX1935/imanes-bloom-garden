@@ -7,6 +7,8 @@ import PageHeader from '@/components/layout/PageHeader';
 import HabitPlant, { Habit, GrowthStage } from '@/components/habits/HabitPlant';
 import AddHabitDialog from '@/components/habits/AddHabitDialog';
 import { getUserProfile } from '@/components/settings/UserSettings';
+import { notificationService } from '@/services/NotificationService';
+import { stepTrackerService } from '@/services/StepTrackerService';
 
 // Calculer l'étape de croissance en fonction du streak
 const calculateGrowthStage = (streak: number): GrowthStage => {
@@ -49,6 +51,7 @@ const Garden = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [userName, setUserName] = useState("Imane");
+  const [trackingActive, setTrackingActive] = useState(false);
 
   // Vérifier si c'est un nouveau jour et réinitialiser completedToday
   const checkAndResetDailyStatus = (savedHabits: Habit[]) => {
@@ -82,7 +85,37 @@ const Garden = () => {
     return savedHabits;
   };
 
+  // Initialiser le suivi des pas en arrière-plan
+  const initStepTracking = async () => {
+    try {
+      const isActive = await stepTrackerService.startTracking();
+      setTrackingActive(isActive);
+      if (isActive) {
+        toast.success("Le suivi des pas en arrière-plan est activé");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation du suivi des pas:", error);
+    }
+  };
+
   useEffect(() => {
+    // Initialiser les notifications
+    notificationService.checkPermissions().then(status => {
+      if (status.display !== 'granted') {
+        toast.info("Activez les notifications pour recevoir des rappels d'habitudes", {
+          action: {
+            label: "Activer",
+            onClick: () => {
+              notificationService.initLocalNotifications();
+            }
+          }
+        });
+      }
+    });
+
+    // Démarrer le suivi des pas en arrière-plan
+    initStepTracking();
+
     // Charger les habitudes depuis localStorage si disponible
     const savedHabits = localStorage.getItem('habits');
     let habitsToUse;
@@ -103,6 +136,12 @@ const Garden = () => {
     // Charger le profil utilisateur
     const profile = getUserProfile();
     setUserName(profile.name);
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      // Si nécessaire, arrêter le suivi des pas
+      // stepTrackerService.stopTracking();
+    };
   }, []);
 
   // Sauvegarder les habitudes dans localStorage à chaque changement
@@ -127,6 +166,12 @@ const Garden = () => {
             toast.success(`🌳 Félicitations ! Votre ${habit.name} est devenue un arbre mature !`, {
               duration: 5000,
             });
+            
+            // Envoyer une notification même si l'app est en arrière-plan
+            notificationService.sendImmediateNotification(
+              "Arbre mature! 🌳", 
+              `Félicitations! Votre habitude "${habit.name}" est devenue un arbre mature!`
+            );
           }
           
           return {
@@ -150,6 +195,14 @@ const Garden = () => {
   };
 
   const handleDeleteHabit = (id: string) => {
+    // Vérifier si l'habitude a un rappel à annuler
+    const habitToDelete = habits.find(h => h.id === id);
+    if (habitToDelete?.notificationId) {
+      notificationService.cancelHabitReminder(habitToDelete.notificationId)
+        .catch(err => console.error("Erreur lors de l'annulation du rappel:", err));
+    }
+    
+    // Supprimer l'habitude
     setHabits(prevHabits => prevHabits.filter(habit => habit.id !== id));
     toast.success("Habitude supprimée du jardin !");
   };
@@ -167,6 +220,40 @@ const Garden = () => {
     
     setHabits(prev => [...prev, newHabit]);
     toast.success(`${name} ajoutée au jardin d'Imane !`);
+
+    // Proposer d'ajouter un rappel pour la nouvelle habitude
+    setTimeout(() => {
+      toast.info(`Voulez-vous configurer un rappel pour "${name}"?`, {
+        action: {
+          label: "Configurer",
+          onClick: () => {
+            // Trouver l'index de la nouvelle habitude
+            const habitIndex = habits.length; // L'index sera après l'ajout
+            
+            // Simuler un clic sur le bouton de rappel de cette habitude
+            const reminderButtons = document.querySelectorAll('[aria-label="Configurer un rappel"]');
+            if (reminderButtons[habitIndex]) {
+              (reminderButtons[habitIndex] as HTMLButtonElement).click();
+            }
+          }
+        }
+      });
+    }, 1000);
+  };
+
+  const handleUpdateReminder = (
+    id: string, 
+    reminderEnabled: boolean, 
+    reminderTime: string, 
+    notificationId?: number
+  ) => {
+    setHabits(prevHabits => 
+      prevHabits.map(habit => 
+        habit.id === id 
+          ? { ...habit, reminderEnabled, reminderTime, notificationId } 
+          : habit
+      )
+    );
   };
 
   // Calcul des statistiques du jardin
@@ -191,6 +278,11 @@ const Garden = () => {
               <p className="text-sm text-bloom-purple">
                 <span className="font-semibold">Arbres matures:</span> {totalMatureTrees}
               </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {trackingActive 
+                  ? "✓ Suivi des pas actif" 
+                  : "✗ Suivi des pas inactif"}
+              </p>
             </div>
             <div className="text-3xl">
               {totalMatureTrees > 0 ? '🌳' : '🌱'}
@@ -206,6 +298,7 @@ const Garden = () => {
             habit={habit}
             onComplete={handleCompleteHabit}
             onDelete={handleDeleteHabit}
+            onUpdateReminder={handleUpdateReminder}
           />
         ))}
         

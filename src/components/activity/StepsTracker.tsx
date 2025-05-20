@@ -6,6 +6,8 @@ import { Settings, TrendingUp } from 'lucide-react';
 import { getUserProfile } from '../settings/UserSettings';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { stepTrackerService } from '@/services/StepTrackerService';
+import StepsWidget from '../widgets/StepsWidget';
 
 interface StepsTrackerProps {
   className?: string;
@@ -27,6 +29,7 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
     calories: 0
   });
   const [sensorAvailable, setSensorAvailable] = useState(false);
+  const [isBackgroundTracking, setIsBackgroundTracking] = useState(false);
   
   // Define the motion handler at component level so it can be referenced in cleanup
   const handleMotion = (event: DeviceMotionEvent) => {
@@ -93,6 +96,23 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
     window.localStorage.setItem('lastAcceleration', JSON.stringify({ x, y, z }));
   };
 
+  // Toggle background step tracking
+  const toggleBackgroundTracking = async () => {
+    if (isBackgroundTracking) {
+      const stopped = await stepTrackerService.stopTracking();
+      if (stopped) {
+        setIsBackgroundTracking(false);
+        toast.success("Suivi des pas en arrière-plan désactivé");
+      }
+    } else {
+      const started = await stepTrackerService.startTracking();
+      if (started) {
+        setIsBackgroundTracking(true);
+        toast.success("Suivi des pas en arrière-plan activé");
+      }
+    }
+  };
+
   // Load saved step data on component mount
   useEffect(() => {
     // Load saved steps from localStorage
@@ -118,6 +138,9 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
         localStorage.setItem('todaySteps', JSON.stringify(newData));
       }
     }
+    
+    // Vérifier si le suivi en arrière-plan est actif
+    setIsBackgroundTracking(stepTrackerService.isTrackingActive());
     
     // Try to access device motion sensors
     if (typeof DeviceMotionEvent !== 'undefined') {
@@ -223,6 +246,36 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
     return () => clearInterval(interval);
   };
 
+  // Rendre disponible le widget pour l'écran d'accueil
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'updateWidget' in window) {
+      (window as any).updateWidget = (
+        steps: number,
+        distance: number,
+        calories: number
+      ) => {
+        console.log("Widget updated with:", { steps, distance, calories });
+        // Logique de mise à jour du widget
+      };
+    }
+
+    // Créer la fonction d'initialisation du widget
+    (window as any).initializeWidget = () => {
+      const savedSteps = localStorage.getItem('todaySteps');
+      if (savedSteps) {
+        const data = JSON.parse(savedSteps);
+        if (data.stepData) {
+          return {
+            steps: data.stepData.steps,
+            distance: data.stepData.distance,
+            calories: data.stepData.calories
+          };
+        }
+      }
+      return { steps: 0, distance: 0, calories: 0 };
+    };
+  }, []);
+
   return (
     <Card className={`bloom-card ${className || ''}`}>
       <div className="flex justify-between items-start mb-2">
@@ -268,11 +321,37 @@ const StepsTracker: React.FC<StepsTrackerProps> = ({ className, onOpenSettings }
           </div>
         </div>
         
+        <Button
+          onClick={toggleBackgroundTracking}
+          variant={isBackgroundTracking ? "outline" : "default"}
+          className="mt-4 w-full"
+          size="sm"
+        >
+          {isBackgroundTracking 
+            ? "Désactiver suivi en arrière-plan" 
+            : "Activer suivi en arrière-plan"}
+        </Button>
+        
         {!sensorAvailable && (
           <p className="text-xs text-amber-500 mt-3">
             Mode simulation activé (capteurs non disponibles)
           </p>
         )}
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <p className="text-sm mb-2 text-center font-medium">Widget sur l'écran d'accueil</p>
+        <div className="border border-dashed border-gray-200 p-2 rounded-lg">
+          <StepsWidget
+            steps={stepData.steps}
+            distance={stepData.distance}
+            calories={stepData.calories}
+            compact={true}
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          Pour ajouter ce widget à votre écran d'accueil, appuyez longuement sur l'écran d'accueil et choisissez "Widgets" > "Imane's Bloom"
+        </p>
       </div>
     </Card>
   );
