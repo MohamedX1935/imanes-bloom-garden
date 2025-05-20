@@ -5,6 +5,7 @@ import { getUserProfile } from '@/components/settings/UserSettings';
 export class StepTrackerService {
   private static instance: StepTrackerService;
   private isTracking = false;
+  private trackingLabel = 'step_tracking';
   
   private constructor() {}
   
@@ -104,8 +105,8 @@ export class StepTrackerService {
       
       // Fix: Use the correct format for dispatchEvent with the required properties
       await BackgroundRunner.dispatchEvent({
-        label: 'step_tracking',
-        event: 'step_tracking',
+        label: this.trackingLabel,
+        event: this.trackingLabel,
         details: {
           jsCode: jsCode
         }
@@ -126,10 +127,16 @@ export class StepTrackerService {
    */
   public async stopTracking() {
     try {
-      // Looking at the BackgroundRunner API documentation, it uses events so we need to 
-      // check if there's a method to stop events or background tasks
-      // Using BackgroundRunner.stop() as it seems to be the most likely method to stop all tasks
-      await BackgroundRunner.stop();
+      // Looking at the BackgroundRunner API documentation, it seems we need to 
+      // use removeEventListener or a similar method to stop events
+      // Fix: Use the correct method for stopping background tasks
+      await BackgroundRunner.dispatchEvent({
+        label: this.trackingLabel,
+        event: 'cancel',
+        details: {
+          taskId: this.trackingLabel
+        }
+      });
       this.isTracking = false;
       console.log('Suivi des pas en arrière-plan arrêté');
       return true;
